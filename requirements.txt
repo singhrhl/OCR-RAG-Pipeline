@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+opencv-python
+easyocr
+numpy
+pillow
+reportlab
+pypdf
+faiss-cpu
+sentence-transformers
+transformers
+torch
+python-multipart
+pdf2image
+groq
