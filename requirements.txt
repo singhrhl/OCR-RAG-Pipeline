@@ -13,3 +13,5 @@ torch
 python-multipart
 pdf2image
 groq
+streamlit
+poppler

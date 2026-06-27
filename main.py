@@ -34,7 +34,7 @@ def home():
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
 
-    path = UPLOAD_DIR + file.filename
+    path = str(UPLOAD_DIR) + file.filename
 
     with open(path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -73,7 +73,7 @@ async def upload(file: UploadFile = File(...)):
 
         text, boxes = extract_text(proc)
 
-    pdf_path = PROC_DIR + file.filename + ".pdf"
+    pdf_path = str(PROC_DIR) + file.filename + ".pdf"
 
     create_pdf(image_path, text, boxes, pdf_path)
 
