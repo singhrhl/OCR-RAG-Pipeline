@@ -1,15 +1,18 @@
-from fastapi import FastAPI, UploadFile, File
-import shutil
 import os
+import shutil
+
+from dotenv import load_dotenv
+load_dotenv()  # reads .env in the project root, if present; no-op if missing
+
+from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.preprocess import preprocess_image
 from app.ocr_engine import extract_text
 from app.pdf_generator import create_pdf
 from app.rag import store_embeddings, search
 from app.llm import generate_answer
-
-from fastapi.responses import FileResponse
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -24,6 +27,13 @@ app.add_middleware(
 
 UPLOAD_DIR = "data/uploads/"
 PROC_DIR = "data/processed/"
+
+# On Linux/Docker, poppler-utils installs to a location already on PATH,
+# so pdf2image finds it automatically when poppler_path=None.
+# On Windows, set POPPLER_PATH in your environment (or a .env file) to
+# the `bin` folder of your local poppler install, e.g.:
+#   POPPLER_PATH=C:\poppler\Library\bin
+POPPLER_PATH = os.environ.get("POPPLER_PATH") or None
 
 
 @app.get("/")
@@ -45,9 +55,9 @@ async def upload(file: UploadFile = File(...)):
         from pdf2image import convert_from_path
 
         pages = convert_from_path(
-        path,
-         poppler_path=r"C:\poppler-25.12\poppler-25.12.0\Library\bin"
-    )
+            path,
+            poppler_path=POPPLER_PATH
+        )
 
         text = ""
 
