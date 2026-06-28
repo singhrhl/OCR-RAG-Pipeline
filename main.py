@@ -28,6 +28,9 @@ app.add_middleware(
 UPLOAD_DIR = "data/uploads/"
 PROC_DIR = "data/processed/"
 
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(PROC_DIR, exist_ok=True)
+
 # On Linux/Docker, poppler-utils installs to a location already on PATH,
 # so pdf2image finds it automatically when poppler_path=None.
 # On Windows, set POPPLER_PATH in your environment (or a .env file) to
