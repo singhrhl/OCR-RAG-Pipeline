@@ -61,7 +61,7 @@ async def upload(file: UploadFile = File(...)):
 
             pages = convert_from_path(
                 path,
-                poppler_path=os.environ.get("POPPLER_PATH") or None
+                poppler_path=os.environ.get("POPPLER_PATH") or None  # type: ignore[arg-type]
             )
 
             text = ""
