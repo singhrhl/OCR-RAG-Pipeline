@@ -1,9 +1,11 @@
 import streamlit as st
 import requests
 from PIL import Image
-import io
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://127.0.0.1:8000")
 
 st.title("📄 OCR → RAG Document Assistant")
 

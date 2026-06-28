@@ -1,21 +1,27 @@
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
 from PIL import Image
 
 
 def create_pdf(image_path, text, boxes, output_pdf):
 
-    c = canvas.Canvas(output_pdf, pagesize=letter)
+    img = Image.open(image_path)
+    img_w, img_h = img.size
 
-    width, height = letter
+    # Build the page to match the image's own aspect ratio,
+    # scaled to a fixed page width.
+    page_width = 612  # points, same width as Letter for consistency
+    page_height = page_width * (img_h / img_w)
 
-    # Draw background image
+    c = canvas.Canvas(output_pdf, pagesize=(page_width, page_height))
+
+    width, height = page_width, page_height
+
+    # Draw background image (now matches canvas aspect ratio exactly)
     c.drawImage(image_path, 0, 0, width=width, height=height)
 
     # Invisible text layer
     c.setFont("Helvetica", 8)
-    c._code.append("3 Tr")
-
+    
     img = Image.open(image_path)
     img_w, img_h = img.size
 
@@ -45,12 +51,10 @@ def create_pdf(image_path, text, boxes, output_pdf):
             pdf_x = x * scale_x
             pdf_y = height - (y * scale_y)
 
-            c.drawString(pdf_x, pdf_y, word)
+            c.drawString(pdf_x, pdf_y, word, mode=3)
 
         except:
             continue
-
-    c._code.append("0 Tr")
 
     c.save()
 
