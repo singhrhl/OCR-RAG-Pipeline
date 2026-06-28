@@ -4,7 +4,7 @@ import shutil
 from dotenv import load_dotenv
 load_dotenv()  # reads .env in the project root, if present; no-op if missing
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -44,56 +44,66 @@ def home():
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
 
-    path = str(UPLOAD_DIR) + file.filename
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Uploaded file has no filename")
 
-    with open(path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    filename: str = file.filename  # narrowed to str from here on
 
-    # If PDF convert to image
-    if file.filename.endswith(".pdf"):
+    try:
+        path = str(UPLOAD_DIR) + filename
 
-        from pdf2image import convert_from_path
+        with open(path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
-        pages = convert_from_path(
-            path,
-            poppler_path=POPPLER_PATH
-        )
+        if filename.endswith(".pdf"):
 
-        text = ""
+            from pdf2image import convert_from_path
 
-        for i, page in enumerate(pages):
+            pages = convert_from_path(
+                path,
+                poppler_path=os.environ.get("POPPLER_PATH") or None
+            )
 
-            image_path = PROC_DIR + f"page{i+1}.jpg"
+            text = ""
 
-            page.save(image_path, "JPEG")
+            for i, page in enumerate(pages):
+
+                image_path = PROC_DIR + f"page{i+1}.jpg"
+
+                page.save(image_path, "JPEG")
+
+                proc = preprocess_image(image_path)
+
+                page_text, boxes = extract_text(proc)
+
+                text += page_text + "\n"
+
+            image_path = PROC_DIR + "page1.jpg"
+
+        else:
+
+            image_path = path
 
             proc = preprocess_image(image_path)
 
-            page_text, boxes = extract_text(proc)
+            text, boxes = extract_text(proc)
 
-            text += page_text + "\n"
+        pdf_path = str(PROC_DIR) + filename + ".pdf"
 
-        image_path = PROC_DIR + "page1.jpg"
+        create_pdf(image_path, text, boxes, pdf_path)
 
-    else:
+        store_embeddings(text)
 
-        image_path = path
+        return {
+            "status": "processed",
+            "pdf": pdf_path
+        }
 
-        proc = preprocess_image(image_path)
-
-        text, boxes = extract_text(proc)
-
-    pdf_path = str(PROC_DIR) + file.filename + ".pdf"
-
-    create_pdf(image_path, text, boxes, pdf_path)
-
-    store_embeddings(text)
-
-    return {
-        "status": "processed",
-        "pdf": pdf_path
-    }
-
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to process document: {str(e)}"
+        )
 
 @app.get("/query")
 def query(q: str):
