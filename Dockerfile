@@ -3,12 +3,11 @@ FROM python:3.11-slim
 # System dependencies:
 # - poppler-utils: required by pdf2image for PDF -> image conversion
 # - libgl1, libglib2.0-0: required by opencv-python (cv2) at runtime
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     poppler-utils \
     libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /code
 
 # Install Python dependencies first (separate layer so Docker caches this
