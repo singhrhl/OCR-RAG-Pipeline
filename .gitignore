@@ -4,5 +4,6 @@ data/processed/*
 !data/uploads/.gitkeep
 !data/processed/.gitkeep
 **/__pycache__/
+__pycache__/
 **.pyc
 .env
