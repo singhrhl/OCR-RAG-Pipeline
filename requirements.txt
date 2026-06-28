@@ -14,4 +14,4 @@ python-multipart
 pdf2image
 groq
 streamlit
-dotenv
+python-dotenv
