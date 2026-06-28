@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.env
+.git/
+.gitignore
+data/uploads/*
+data/processed/*
+!data/uploads/.gitkeep
+!data/processed/.gitkeep
+README.md
